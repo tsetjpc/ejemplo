@@ -7,19 +7,23 @@
 <body>
   <h1>¡Hola desde GitHub Pages!</h1>
   <button onclick="mostrarMensaje()">Haz clic aquí</button>
-  <script>
-    import { Client } from "@gradio/client";
-    function accesHF() {
+
+  <script type="module">
+    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/+esm";
+
+    async function accessHF() {
       const client = await Client.connect("tsetjpc/minimal");
-      const result = await client.predict("/predict", { 		
-		  name: "Pepe!!", 
+      const result = await client.predict("/predict", {
+        name: "Pepe!!",
       });
       console.log(result.data);
       return result.data;
     }
-    function mostrarMensaje() {
-      alert("¡Este mensaje viene de JavaScript en GitHub Pages!");
-      alert(accessHF());
+
+    async function mostrarMensaje() {
+      alert("¡Mensaje desde GitHub Pages: nuevo codigo!");
+      const respuesta = await accessHF();
+      alert(respuesta);
     }
   </script>
 </body>
