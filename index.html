@@ -8,38 +8,49 @@
   <h1>¡Hola desde GitHub Pages!</h1>
   <button onclick="mostrarMensaje()">Haz clic aquí</button>
 
-  <script>
-     async function accessHF() {
-	  try {
-	    const response = await fetch("https://tsetjpc-minimal.hf.space/run/predict", {
-	      method: "POST",
-	      headers: {
-	        "Content-Type": "application/json"
-	      },
-	      body: JSON.stringify({ data: ["Pepe!!"] })
-	    });
-	
-	    const result = await response.json();
-	    console.log("Respuesta completa:", result);
-	
-	    if (result && result.data && result.data.length > 0) {
-	      return result.data[0];
-	    } else {
-	      return "Respuesta inesperada del servidor.";
-	    }
-	  } catch (error) {
-	    console.error("Error al acceder a Hugging Face:", error);
-	    return "Error al conectar con Hugging Face.";
-	  }
-	}
+  <script type="module">
+    async function accessHF() {
+      try {
+        // Paso 1: POST para obtener el event_id
+        const postResponse = await fetch("https://tsetjpc-minimal.hf.space/gradio_api/call/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ data: ["Pepe!!"] })
+        });
 
-	  
+        const postResult = await postResponse.json();
+        const eventId = postResult.event_id;
+
+        if (!eventId) {
+          throw new Error("No se recibió event_id");
+        }
+
+        // Paso 2: GET para obtener la respuesta
+        const getResponse = await fetch(`https://tsetjpc-minimal.hf.space/gradio_api/call/predict/${eventId}`);
+        const text = await getResponse.text();
+
+        // Extraer la línea que contiene "data: [...]"
+        const match = text.match(/data:\s*(\[[^\]]*\])/);
+        if (match && match[1]) {
+          const dataArray = JSON.parse(match[1]);
+          return dataArray[0];
+        } else {
+          throw new Error("No se pudo extraer la respuesta del servidor");
+        }
+
+      } catch (error) {
+        console.error("Error:", error);
+        return "Error al conectar con Hugging Face.";
+      }
+    }
+
     async function mostrarMensaje() {
-      alert("¡Nuevo código desde GITHUB pages!");
+      alert("¡Este mensaje viene de JavaScript en GitHub Pages!");
       const respuesta = await accessHF();
       alert(respuesta);
     }
-    
   </script>
 </body>
 </html>
